@@ -4,7 +4,7 @@ library(dygraphs)
 library(plotly)
 library(xts)
 
-setwd("/data/OccuDB/")
+setwd("/data/OccuDB/sites/")
 files <- list.files()
 
 formatCSV <- function(file){
