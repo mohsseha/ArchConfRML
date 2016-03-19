@@ -10,9 +10,16 @@ import datetime
 
 path = "/Users/dillon/src/ArchConfRML/4-1-LinearRegression/Data/"
 
-start = datetime.datetime(2016, 1, 1)
-end = datetime.datetime(2016,2,1)
+start = datetime.datetime(2016, 1, 12)
+end = datetime.datetime(2016,2,20)
 
 f = web.DataReader("ENOC", 'yahoo', start, end)
-f["High"].to_csv(path + "ENOC_validation.csv")
-f.sample(n=18, random_state=60)["High"].to_csv(path + "ENOC_train.csv")
+f["Day"] = f.index.dayofyear
+f = f[["Day", "High"]]
+f.rename(columns={"Day":"x", "High":"y"}, inplace=True)
+f.to_csv(path + "validation.csv",index = False)
+valid = f.sample(n=16, random_state=88)
+valid = valid.append(f.head(1))
+valid = valid.append(f.tail(1))
+valid = valid.drop_duplicates()
+valid.sort_index().to_csv(path + "train.csv",index=False)
