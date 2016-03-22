@@ -18,6 +18,8 @@ formatCSV <- function(file){
   allData$DATE <- as.Date(allData$TIME)
   allData$HOUR <- lubridate::hour(allData$TIME)
   allData$V1 <- NULL #Drops unecessary column
+  
+  # Filter for only complete days
   goodDates <- allData %>%
     group_by(DATE) %>%
     summarise(NUMBER=n()) %>%
@@ -48,15 +50,32 @@ plotPCA <- function(res){
   plotData <- data.frame(DATE=rownames(res$x),
                     PC1=res$x[,1],
                     PC2=res$x[,2])
-  p <- plot_ly(plotData, x = PC1, y = PC2, text = paste("Date: ", DATE),
-          mode = "markers", color = lubridate::wday(DATE, label=T))
+  p <- plot_ly(plotData, x = -1*PC1, y = -1*PC2, 
+         text = paste("Date: ", DATE), # Label Points
+         mode = "markers", # Plot points
+         color = lubridate::wday(DATE, label=T) # color by day-of-week
+        ) %>%
+    layout(xaxis=list(title="PC 1"),
+           yaxis=list(title="PC 2"))
   return(layout(p, hovermode="closest"))
 }
 
-test <- formatCSV("Site-17812113-1.rds.MMA.csv")
-test <- formatCSV(files[[2700]])
-res <- prcomp(formatMatrix(test), scale=T)
-plotDygraph(test)
+
+plotComponents <- function(res){
+  plotData <- as.data.frame(-1*res$rotation[,1:2]) %>%
+    mutate(Hour=0:23) %>%
+    gather("Principle_Component", "Value", -Hour)
+  ggplot(plotData, aes(x=Hour, y=Value)) + 
+    geom_line(aes(color=Principle_Component))
+}
+
+siteData <- formatCSV("Site-17812113-1.rds.MMA.csv")
+siteData <- formatCSV(files[[2700]])
+siteData <- formatCSV("Site-46691-1.rds.MMA.csv")
+siteData <- formatCSV("Site-17812113-1.rds.MMA.csv")
+res <- prcomp(formatMatrix(siteData), scale=F, center=F)
+plotDygraph(siteData)
 plotPCA(res)
+plotComponents(res)
 
 
