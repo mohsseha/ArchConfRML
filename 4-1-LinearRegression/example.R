@@ -1,8 +1,17 @@
+library(ggplot2)
+library(dplyr)
 train_data <- read.csv("Data/train.csv")
 validation_data <- read.csv("Data/validation.csv")
 
 plot(validation_data, col="Red")
 plot(train_data, col="Red")
+
+#train_data_x <- seq(1, 10, length.out=100)
+#train_data <- data.frame(x=sample(train_data_x, 15))
+#train_data$y= train_data$x * sin(train_data$x) + runif(length(train_data$x))
+train_data <- read.csv("Data/brainData.csv", stringsAsFactors = F, header = F)
+train_data <- train_data %>%
+  select(x=V2, y=V3)
 
 # Create the model to be evaluated.
 # This is the choice of Representation
@@ -16,8 +25,8 @@ createRepresentation <- function(order=2){
   return(representation)
 }
 
-train_data <- data.frame(y=faithful$waiting,
-                         x=faithful$eruptions)
+#train_data <- data.frame(y=diamonds$price,
+#                         x=diamonds$carat)
 
 # Choose Representation
 # The representation determines what the final product
@@ -38,7 +47,7 @@ cost <- function(weights, lambda, rep=representation){
   # Calculate squared error of prediction at each data point
   predictions <- rep(weights)(train_data$x)
   errors <- train_data$y - predictions
-  dataCost <- 1/2*sum(errors**2)
+  dataCost <- 1/2*sum(errors**2) * 1/length(errors)
   # Penalty for large weights (excluding the constant term)
   # This is to minimize overfitting
   # We do not penalize the constant term, which is determined by
@@ -49,7 +58,28 @@ cost <- function(weights, lambda, rep=representation){
 
 
 # Optimization
-bestFit <- optim(c(1,1), cost, lambda=0, rep=createRepresentation(1),
+startGuess <- c(150,1,50,50)
+rep=createRepresentation(3)
+bestFit <- optim(startGuess, cost, lambda=0.5, rep=rep,
                  method="L-BFGS-B")
-finalModel <- representation(bestFit$par)
+print(bestFit$par)
+finalModel <- rep(bestFit$par)
+
+
+
+# Plotting
+xValues <- seq(0,500,1)
+yValues <- finalModel(xValues)
+fitData <- data.frame(x=xValues,
+                      y=yValues)
+ggplot() + 
+  geom_line(data=fitData, aes(x=x,y=y), color="red") +
+  geom_point(data=train_data, aes(x=x, y=y))
+
+
+
+# Create plot as a function of lambda
+
+
+
 
