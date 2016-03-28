@@ -9,9 +9,12 @@ plot(train_data, col="Red")
 #train_data_x <- seq(1, 10, length.out=100)
 #train_data <- data.frame(x=sample(train_data_x, 15))
 #train_data$y= train_data$x * sin(train_data$x) + runif(length(train_data$x))
-train_data <- read.csv("Data/brainData.csv", stringsAsFactors = F, header = F)
+train_data <- read.csv("Data/electricity_vs_temperature.csv", stringsAsFactors = F, header = T)
 train_data <- train_data %>%
-  select(x=V2, y=V3)
+  select(x=mean_temperature, y=usage)
+train_data <- sample_n(train_data, 100)
+validation <- tail(train_data,30)
+train_data <- head(train_data, 20)
 
 # Create the model to be evaluated.
 # This is the choice of Representation
@@ -47,34 +50,42 @@ cost <- function(weights, lambda, rep=representation){
   # Calculate squared error of prediction at each data point
   predictions <- rep(weights)(train_data$x)
   errors <- train_data$y - predictions
-  dataCost <- 1/2*sum(errors**2) * 1/length(errors)
+  dataCost <- 0.5*sum(errors**2)
   # Penalty for large weights (excluding the constant term)
   # This is to minimize overfitting
   # We do not penalize the constant term, which is determined by
   # the origin of the data
-  weightCost <- lambda*(sum(weights[-1])) #Drop the first weight
+  weightCost <- lambda*(sum(weights[-1]**2)) #Drop the first weight
   return(dataCost + weightCost)
 }
 
 
 # Optimization
-startGuess <- c(150,1,50,50)
-rep=createRepresentation(3)
-bestFit <- optim(startGuess, cost, lambda=0.5, rep=rep,
-                 method="L-BFGS-B")
+startGuess <- c(5000,200,-5,5,5,5,5)
+rep=createRepresentation(6)
+optimizationCost <- function(weights){cost(weights, lambda=0, rep)}
+bestFit <- optim(startGuess, optimizationCost,
+                 method="BFGS")
 print(bestFit$par)
 finalModel <- rep(bestFit$par)
 
 
 
 # Plotting
-xValues <- seq(0,500,1)
+xValues <- c(seq(10,85,0.1), train_data$x, validation_data$x)
 yValues <- finalModel(xValues)
 fitData <- data.frame(x=xValues,
                       y=yValues)
+tmp <- lm(y ~ I(x) + I(x**2) + I(x**3) + I(x**4) + I(x**5), data=train_data)
+lmData <- data.frame(x=xValues,
+                    y=predict(tmp, data.frame(x=xValues)))
 ggplot() + 
   geom_line(data=fitData, aes(x=x,y=y), color="red") +
-  geom_point(data=train_data, aes(x=x, y=y))
+  ylim(10000,15000) +
+  #geom_line(data=lmData, aes(x=x,y=y), color="blue") +
+  geom_point(data=train_data, aes(x=x, y=y))+
+  geom_point(data=validation, aes(x=x, y=y), color="green") #+
+
 
 
 
