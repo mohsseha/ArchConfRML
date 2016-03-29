@@ -6,14 +6,15 @@ library(autoencoder)
 
 
 loadSite<-function(siteNumber){
-  site<-read.csv(file=
+#add doc here 
+site<-read.csv(file=
                    paste0("~/src/ArchConfRML/data/csv/",siteNumber,".csv")
   )
   site[,1]<-as.POSIXct(site[,1],origin="1970-01-01")
   return(site)
 }
 
-
+#NG: what's is this? 
 hourlySample<-function(subHourDF){
 #Input:
     #      timestamp  value
@@ -81,8 +82,6 @@ max.iterations = 2000
 
 
 
-
-data('autoencoder_Ninput=100_Nhidden=100_rho=1e-2')
 weekly.Training.Data<-as.matrix(read.csv("~/src/ArchConfRML/data/weekly/delme.csv",header = FALSE))
 
 
@@ -148,38 +147,3 @@ par(op)  ## restore plotting par's
 write.csv(X.hiddenValues,"/tmp/delme.csv")
 
 
-
-
-#### APENDEX:
-####
-#### other thignts that kind work:
-
-## Load a pre-trained autoencoder object with N.input=100 and N.hidden=5*5,
-## trained on unlabeled set of 5000 image patches of size Nx.patch by Ny.patch,
-## randomly picked from 10 nature photos, and visualize the features
-## learned by its hidden units:
-
-data('autoencoder_Ninput=100_Nhidden=25_rho=1e-2')
-
-## Visualize hidden units' learned features:
-visualize.hidden.units(autoencoder.object,Nx.patch=10,Ny.patch=10)
-
-
-
-
-
-
-##### 2 units:
-
-autoencoder.object <- autoencode(X.train=weekly.Training.Data,
-                                 3,
-                                 N.hidden=2,
-                                 unit.type=unit.type,lambda=lambda,beta=beta,
-                                 rho=0.5,#logistic after all
-                                 epsilon=epsilon,
-                                 optim.method="BFGS",max.iterations=max.iterations,
-                                 rescale.flag=TRUE,rescaling.offset=0.001)
-
-X.hiddenValues <- predict(autoencoder.object, X.input=weekly.Training.Data, hidden.output=TRUE)$X.output
-
-write.csv(X.hiddenValues,"/tmp/delme.csv")
