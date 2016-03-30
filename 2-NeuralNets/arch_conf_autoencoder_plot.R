@@ -1,4 +1,4 @@
-setwd("~/src")  # Change this to parent folder of code
+setwd("~/Projects")  # Change this to parent folder of code
 library(ggplot2)
 library(shiny)
 
@@ -6,19 +6,21 @@ HOURS_IN_WEEK <- 168
 
 server <- function(input, output) {
     # Gives df1 and dfts
+
+    df1 <- read.csv(file = "/tmp/delme.csv", header = TRUE)
+    names(df1) <- c("","WT1","WT2")
     df_ts <- read.csv(file = "./ArchConfRML/data/weekly/delme.csv", header = FALSE)
     df2 <- reactiveValues(
       KWH=t(df_ts[1,])
     )
-    
-    df1 <- data.frame(WT1=1:nrow(df_ts),WT2=1:nrow(df_ts))
+    Hour <- 1:HOURS_IN_WEEK  
     
     df1$siteid <- 1:nrow(df1)    # Site id's
     output$distPlot <- renderPlot({
       ggplot(df1,aes(x=WT1,y=WT2)) + geom_point()
     })
     output$distPlot2 <- renderPlot({
-      qplot(1:HOURS_IN_WEEK, df2$KWH,ylab = "kWH")
+      qplot(Hour, df2$KWH,ylab = "kWH")
     })
   
     observeEvent(input$plot_click, {
