@@ -49,9 +49,33 @@ myDF[1:5, c("a","b")] # returns the 1-5 entries of the 'a' and 'b' columns
 myDF[myDF$a < 0.1 & myDF$b < 0.5, ] # all rows for which a < 0.1 and b <0.5
 
 # An extremely useful package for data analysis is 'dplyr'
+# dplyr has a lot of functions for grouping, filtering, and summarizing data.frames
+# Packages are loaded with 'library'. Notice that the package name is not in quotes
 library(dplyr)
 
+# dplyr and many new analysis packages use the pipe operator %>%
+# It is an infix operator
+# a %>% f() is evaluated as f(a)
+# a %>% f(b,c,d) is evaluated as f(a,b,c,d)
+myDF %>% head()
 
+# This syntactic sugar that allows for a clearer representation
+# of nested function operation
+# For example, we'll use the built in iris data set
+glimpse(iris)
 
+# Calculate the average petal length by species
+avgPetalLength <- iris %>%
+  group_by(Species) %>%
+  summarize(PETAL_LENGTH = mean(Petal.Length))
+print(avgPetalLength)
 
+# This is equivalent to
+avgPetalLength2 <- summarize(group_by(iris, Species), PETAL_LENGTH=mean(Petal.Length))
+identical(avgPetalLength, avgPetalLength2)
+
+# and identical to
+tmp1 <- group_by(iris, Species)
+avgPetalLength3 <- summarize(tmp1, PETAL_LENGTH=mean(Petal.Length))
+identical(avgPetalLength, avgPetalLength3)
 
