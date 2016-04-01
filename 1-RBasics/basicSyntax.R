@@ -21,6 +21,8 @@ rangeArray[c(1,5)]
 # Negative numbers are omitted
 rangeArray[-5]
 
+# Functions
+
 # Most flexible base data structure is the list
 myList <- list(a=1, b="Hello", c=c(1,2,3.4))
 

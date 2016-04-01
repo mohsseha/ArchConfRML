@@ -1,20 +1,11 @@
 library(ggplot2)
 library(dplyr)
-train_data <- read.csv("Data/train.csv")
-validation_data <- read.csv("Data/validation.csv")
+data <- read.csv("Data/kWh_vs_Temperature.csv")
+train_data <- data[1:20, ] # Take only the first 20 points for training
+validation_data <- data[-c(1:20),] # Take all BUT the first 20 points for validation
 
 plot(validation_data, col="Red")
-plot(train_data, col="Red")
-
-#train_data_x <- seq(1, 10, length.out=100)
-#train_data <- data.frame(x=sample(train_data_x, 15))
-#train_data$y= train_data$x * sin(train_data$x) + runif(length(train_data$x))
-train_data <- read.csv("Data/electricity_vs_temperature.csv", stringsAsFactors = F, header = T)
-train_data <- train_data %>%
-  select(x=mean_temperature, y=usage)
-train_data <- sample_n(train_data, 100)
-validation <- tail(train_data,30)
-train_data <- head(train_data, 20)
+points(train_data, col="Green")
 
 # Create the model to be evaluated.
 # This is the choice of Representation
@@ -37,7 +28,7 @@ createRepresentation <- function(order=2){
 # In this case, we choose a simple third order polynomial
 representation <- function(weights){
   function(x){
-    weights[1] + weights[2]*x + weights[3]*x**2
+    weights[1] + weights[2]*x + weights[3]*x**2 + weights[4]*x**3 + weights[5]*x**4
   }
 }
 
@@ -63,6 +54,7 @@ cost <- function(weights, lambda, rep=representation){
 # Optimization
 startGuess <- c(5000,200,-5,5,5,5,5)
 rep=createRepresentation(6)
+rep=representation
 optimizationCost <- function(weights){cost(weights, lambda=0, rep)}
 bestFit <- optim(startGuess, optimizationCost,
                  method="BFGS")
@@ -73,10 +65,10 @@ finalModel <- rep(bestFit$par)
 
 # Plotting
 xValues <- c(seq(10,85,0.1), train_data$x, validation_data$x)
+xValues <- sort(xValues)
 yValues <- finalModel(xValues)
 fitData <- data.frame(x=xValues,
                       y=yValues)
-tmp <- lm(y ~ I(x) + I(x**2) + I(x**3) + I(x**4) + I(x**5), data=train_data)
 lmData <- data.frame(x=xValues,
                     y=predict(tmp, data.frame(x=xValues)))
 ggplot() + 
@@ -86,7 +78,9 @@ ggplot() +
   geom_point(data=train_data, aes(x=x, y=y))+
   geom_point(data=validation, aes(x=x, y=y), color="green") #+
 
-
+plot(train_data, col="red", xlim=c(0,95), ylim=c(11000,14500))
+lines(fitData, col="black")
+points(validation_data, col="green")
 
 
 # Create plot as a function of lambda
