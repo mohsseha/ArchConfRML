@@ -2,17 +2,32 @@ install.packages("bnlearn")
 library(bnlearn)
 
 
-plot(model2network("[A][C][B|A][D|C][F|A:B:C][E|F]"))
 
 modelNetwork<-model2network("[day][weather][dayOfWeek|day][holiday|day][isPeak|weather:dayOfWeek:holiday]")
 plot(modelNetwork)
 
 
+modelNetwork<-model2network("[season][T][hour][dayName][isHoliday][weeksSincePeak][power|season:T:hour:dayName:isHoliday][top5TOfSeason|season:T][isMoPeak|power:top5TOfSeason:weeksSincePeak]")
+plot(modelNetwork)
 
-peakData=data.frame(day=c(1,2,3,4,5,6,7,8),
-                    weather=factor(c("hot","hot","hot","cold","hot","cold","hot","hot")),
-                    dayOfWeek=factor(c("S","S","M","T","S","S","M","T")),
-                    holiday=factor(c(T,F,F,F,F,F,T,F)),
-                    isPeak=c(1,0,0,0,1,1,1,0))
+peakData<- read.csv("~/src/ArchConfRML/2-GraphicalMethods/trainingTable.csv",stringsAsFactors = T)
+peakData$weeksSincePeak<-factor(peakData$weeksSincePeak)
+str(peakData)
 
 fitPkModel<-bn.fit(modelNetwork,peakData)
+expectedPeakData<-peakData
+#expectedPeakData$newPrediction<-predict(fitPkModel,"top5TOfSeason",peakData,debug = TRUE)
+expectedPeakData$newPrediction<-predict(fitPkModel,"isMoPeak",peakData,debug = TRUE)
+
+length(expectedPeakData[expectedPeakData$isMoPeak!=expectedPeakData$newPrediction,])
+#Let's plot a particular node in our causality plot:
+#note that it does not plot the cold state at all (possibly because it's all hot)
+bn.fit.barchart(fitPkModel$isMoPeak)
+
+
+
+testState=peakData[1,]
+testState$isPeak<-NULL
+
+predict(fitPkModel,"isPeak",testState,debug = TRUE)
+
