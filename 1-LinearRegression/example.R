@@ -1,5 +1,4 @@
-library(ggplot2)
-library(dplyr)
+# 
 data <- read.csv("Data/kWh_vs_Temperature.csv")
 train_data <- data[1:20, ] # Take only the first 20 points for training
 validation_data <- data[-c(1:20),] # Take all BUT the first 20 points for validation
@@ -19,17 +18,21 @@ createRepresentation <- function(order=2){
   return(representation)
 }
 
-#train_data <- data.frame(y=diamonds$price,
-#                         x=diamonds$carat)
 
 # Choose Representation
 # The representation determines what the final product
 # of our machine learning can possibly look like
 # In this case, we choose a simple third order polynomial
 representation <- function(weights){
-  function(x){
-    weights[1] + weights[2]*x + weights[3]*x**2 + weights[4]*x**3 + weights[5]*x**4
+  # Args:
+  # Weights: a vector of weights that matches the representation
+  # Returns:
+  # rep: a function of x
+  rep <- function(x){
+    weights[1] + weights[2]*x + weights[3]*x**2 + 
+      weights[4]*x**3 + weights[5]*x**4
   }
+  return(rep)
 }
 
 # Choose Evaluation Criteria or "Cost Function"
@@ -38,6 +41,16 @@ representation <- function(weights){
 # In this case, we make a cost function that requires
 # a choice of regularization parameter, lambda
 cost <- function(weights, lambda, rep=representation){
+  # Args:
+  # weights: vector of weights. length must correspond to the representation
+  # lambda: scalar value determining how strongly to penalize large weights
+  # rep: a function with inputs 'weights' that ouputs a function that is a
+  #      linear model of 'x'
+  #
+  # returns:
+  # cost: a scalar value that should represents how bad a set of weights are
+  #       for the given representation
+  
   # Calculate squared error of prediction at each data point
   predictions <- rep(weights)(train_data$x)
   errors <- train_data$y - predictions
@@ -50,14 +63,21 @@ cost <- function(weights, lambda, rep=representation){
   return(dataCost + weightCost)
 }
 
+################################################################
+# Optimization:
+# Start playing with the lambda parameter to see
+# how it effects the learned model
+################################################################
 
-# Optimization
-startGuess <- c(5000,200,-5,5,5,5,5)
-rep=createRepresentation(6)
-rep=representation
-optimizationCost <- function(weights){cost(weights, lambda=0, rep)}
-bestFit <- optim(startGuess, optimizationCost,
-                 method="BFGS")
+
+startGuess <- c(5000,200,-5,5,5,5,5) #Estimate of weights to start optimization
+
+# Create a cost to optimize by partially evaluating
+# our cost function
+optimizationCost <- function(weights){cost(weights, lambda=1, representation)}
+bestFit <- optim(par=startGuess, #starting point for optimization
+                 fn=optimizationCost, #function to optimize
+                 method="BFGS") #optimization method
 print(bestFit$par)
 finalModel <- rep(bestFit$par)
 
@@ -71,19 +91,17 @@ fitData <- data.frame(x=xValues,
                       y=yValues)
 lmData <- data.frame(x=xValues,
                     y=predict(tmp, data.frame(x=xValues)))
-ggplot() + 
-  geom_line(data=fitData, aes(x=x,y=y), color="red") +
-  ylim(10000,15000) +
-  #geom_line(data=lmData, aes(x=x,y=y), color="blue") +
-  geom_point(data=train_data, aes(x=x, y=y))+
-  geom_point(data=validation, aes(x=x, y=y), color="green") #+
 
-plot(train_data, col="red", xlim=c(0,95), ylim=c(11000,14500))
+plot(train_data, col="red", xlim=c(0,95), ylim=c(11000,14500),
+     xlab="Mean Daily Temperature (F)",
+     ylab="Electricity Use (kWh)")
 lines(fitData, col="black")
+
+# Compare with validation data sparingly!
+# If you always compare, eventually it becomes training data too
 points(validation_data, col="green")
 
 
-# Create plot as a function of lambda
 
 
 

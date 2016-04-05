@@ -11,7 +11,7 @@ library(plotly)
 library(xts)
 
 # Set directory to the location on your computer
-setwd("~/src/ArchConfRML/3-1-PCA/data/")
+setwd("~/src/ArchConfRML/1-PCA/data/")
 
 # Read and format .csv files into data.frames
 readFile <- function(file){
@@ -23,22 +23,22 @@ readFile <- function(file){
 
 # Format data into matrix necessary for PCA analysis
 pivotToMatrix <- function(timeseriesDF){
-  timeseriesDF <- timeseriesDF %>% select(HOUR, DATE, DEMAND)
-  timeseriesMatrix <- timeseriesDF %>% spread(DATE, DEMAND) # Pivot so each column is one day
+  timeseriesDF <- select(timeseriesDF,HOUR, DATE, DEMAND)
+  timeseriesMatrix <- spread(timeseriesDF, DATE, DEMAND) # Pivot so each column is one day
   row.names(timeseriesMatrix) <- timeseriesMatrix$HOUR
-  timeseriesMatrix <- timeseriesMatrix %>% select(-HOUR) #Drop unecessary hour column
+  timeseriesMatrix <- select(timeseriesMatrix, -HOUR) #Drop unecessary hour column
   timeseriesMatrix <- t(timeseriesMatrix) # Transpose so each row is a day
   return(timeseriesMatrix)
 }  
 
 # Create time series plot of electricy use
-plotDygraph <- function(timeseriesDF){
+plotDygraph <- function(timeseriesDF, demandColumns="DEMAND"){
   # Create xts object of data which is needed for dygraph package
-  myXTS <- xts(x=timeseriesDF$DEMAND, order.by=timeseriesDF$TIME, tzone="UTC")
-  colnames(myXTS) <- "DEMAND"
+  myXTS <- xts(x=timeseriesDF[demandColumns], order.by=timeseriesDF$TIME, tzone="UTC")
+  colnames(myXTS) <- demandColumns
   dygraph(myXTS, main="Electricy Demand") %>%
     dyRangeSelector(dateWindow=c("2014/10/3", "2014/10/17")) %>%
-    dyAxis("y", label = "kWh")
+    dyAxis("y", label = "kW")
 }
 
 # Plot each day according to the first two principle components
@@ -66,8 +66,34 @@ plotComponents <- function(PCAresults){
     geom_line(aes(color=Principle_Component))
 }
 
+#
+lossyCompression <- function(PCAresults, component){
+  pcaValues <- PCAresults$x[,component]
+  componentExpanded <- outer(pcaValues, PCAresults$rotation[,component])
+  componentDF <- as.data.frame(componentExpanded)
+  componentDF$TIME <- as.POSIXct(row.names(componentDF), tz="UTC")
+  componentDF <- componentDF %>%
+    gather("HOUR", "DEMAND", -TIME)
+  lubridate::hour(componentDF$TIME) <- as.numeric(componentDF$HOUR)
+  componentDF$HOUR <- NULL
+  names(componentDF) <- c("TIME", paste0("DEMAND_", component))
+  return(componentDF)
+}
+
+
+########################
+# Start exploring here #
+########################
+
 # Change file to explore other sites
-siteDF <- readFile("agricultural.csv")
+siteDF <- readFile("industrial.csv")
+
+# Look at the structure of the data
+head(siteDF)
+
+# Look at the rotated data
+head(pivotToMatrix(siteDF))
+
 
 # This line is all it takes to calculate PCA in R!
 PCAresults <- prcomp(pivotToMatrix(siteDF), scale=F, center=F) # Calcualte PCA
@@ -76,6 +102,17 @@ PCAresults <- prcomp(pivotToMatrix(siteDF), scale=F, center=F) # Calcualte PCA
 plotDygraph(siteDF)
 plotComponents(PCAresults)
 plotPCA(PCAresults)
+
+# Compare the time series of the actual demand with the PCA Compressed demand
+compressed1 <- lossyCompression(PCAresults, 1)
+compressed2 <- lossyCompression(PCAresults, 2)
+compressed <- inner_join(compressed1, compressed2, by="TIME")
+compressed$PCA_ESTIMATE <- compressed$DEMAND_1 + compressed$DEMAND_2
+
+plotDF <- inner_join(siteDF, compressed, by="TIME")
+plotDygraph(plotDF, c("DEMAND", "PCA_ESTIMATE"))
+
+
 
 
 
