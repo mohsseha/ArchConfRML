@@ -41,10 +41,10 @@ server <- function(input, output) {
 ui <- fluidPage(#Page layout:
   title = "Autoencoder",
   fluidRow(
-    column(width = 4,
-           plotOutput("lhsPlot", click = "plot_click")),
-    column(width = 3, offset = 2,
-           plotOutput("rhsPlot"))
+    column(width = 5,
+           plotOutput("lhsPlot", height = 500, width = 500, click = "plot_click")),
+    column(width = 5, offset = 1,
+           plotOutput("rhsPlot",height = 500, width = 500))
   ))
 
 shinyApp(ui = ui, server = server)
