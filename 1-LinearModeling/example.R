@@ -6,18 +6,6 @@ validation_data <- data[-c(1:20),] # Take all BUT the first 20 points for valida
 plot(validation_data, col="Red")
 points(train_data, col="Green")
 
-# Create the model to be evaluated.
-# This is the choice of Representation
-createRepresentation <- function(order=2){
-  representation <- function(weights){
-    Vectorize(function(x){
-      # Build up vector of powers of x
-      componentVector <- vapply(0:order, function(power) x**power, numeric(1))
-      sum(weights * componentVector)
-  })}
-  return(representation)
-}
-
 
 # Choose Representation
 # The representation determines what the final product
@@ -74,23 +62,22 @@ startGuess <- c(5000,200,-5,5,5,5,5) #Estimate of weights to start optimization
 
 # Create a cost to optimize by partially evaluating
 # our cost function
-optimizationCost <- function(weights){cost(weights, lambda=1, representation)}
+optimizationCost <- function(weights){cost(weights, lambda=0, representation)}
 bestFit <- optim(par=startGuess, #starting point for optimization
                  fn=optimizationCost, #function to optimize
                  method="BFGS") #optimization method
 print(bestFit$par)
-finalModel <- rep(bestFit$par)
+finalModel <- representation(bestFit$par)
 
 
+#################################
+# Plotting to visualize results #
+#################################
 
-# Plotting
-xValues <- c(seq(10,85,0.1), train_data$x, validation_data$x)
-xValues <- sort(xValues)
+xValues <- c(seq(10,85,0.1))
 yValues <- finalModel(xValues)
 fitData <- data.frame(x=xValues,
                       y=yValues)
-lmData <- data.frame(x=xValues,
-                    y=predict(tmp, data.frame(x=xValues)))
 
 plot(train_data, col="red", xlim=c(0,95), ylim=c(11000,14500),
      xlab="Mean Daily Temperature (F)",
@@ -99,7 +86,7 @@ lines(fitData, col="black")
 
 # Compare with validation data sparingly!
 # If you always compare, eventually it becomes training data too
-points(validation_data, col="green")
+# points(validation_data, col="green")
 
 
 

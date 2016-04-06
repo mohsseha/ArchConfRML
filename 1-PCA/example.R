@@ -66,7 +66,11 @@ plotComponents <- function(PCAresults){
     geom_line(aes(color=Principle_Component))
 }
 
-#
+
+######################
+# PCA as Compression #
+######################
+
 lossyCompression <- function(PCAresults, component){
   pcaValues <- PCAresults$x[,component]
   componentExpanded <- outer(pcaValues, PCAresults$rotation[,component])
@@ -86,7 +90,7 @@ lossyCompression <- function(PCAresults, component){
 ########################
 
 # Change file to explore other sites
-siteDF <- readFile("industrial.csv")
+siteDF <- readFile("manufacturing.csv")
 
 # Look at the structure of the data
 head(siteDF)
