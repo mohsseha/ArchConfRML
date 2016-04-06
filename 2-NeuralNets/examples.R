@@ -22,14 +22,14 @@ epsilon <- 0.001
 max.iterations = 2000
 
 ## load a training data set, it's an N row with 168 column csv:
-#weekly.Training.Data <- as.matrix(read.csv("~/src/ArchConfRML/data/weeklyhourlydata_fnl.csv", header = FALSE))
-weekly.Training.Data <- as.matrix(read.csv("~/src/ArchConfRML/data/avgWeeklySample.csv", header = FALSE))
+#weekly.Training.Data <- as.matrix(read.csv("../data/weeklyhourlydata_fnl.csv", header = FALSE))
+weekly.Training.Data <- as.matrix(read.csv("../data/avgWeeklySample.csv", header = FALSE))
 
 ## Train the autoencoder on training.matrix using BFGS optimization method
 ## WARNING: the training can take as long as 20 minutes for this dataset!
 
 ## Either calculat eht autoencode.object or load it from a saved RDS:
-autoencoder.object <-  readRDS(file = "~/src/ArchConfRML/data/trainedAutoEncoder.rds")
+autoencoder.object <-  readRDS(file = "../data/trainedAutoEncoder.rds")
 # autoencoder.object <- autoencode(
 #   X.train = weekly.Training.Data,
 #   N.layers,
@@ -44,7 +44,7 @@ autoencoder.object <-  readRDS(file = "~/src/ArchConfRML/data/trainedAutoEncoder
 #   rescale.flag = TRUE,
 #   rescaling.offset = 0.001
 # )
-# saveRDS(autoencoder.object, file = "~/src/ArchConfRML/data/trainedAutoEncoder.rds")
+# saveRDS(autoencoder.object, file = "../data/trainedAutoEncoder.rds")
 
 visualize.hidden.units(autoencoder.object, Nx.patch, Ny.patch) # don't know why there is only 1 figure here ..
 
