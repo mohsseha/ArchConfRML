@@ -1,5 +1,5 @@
 # 
-data <- read.csv("Data/kWh_vs_Temperature.csv")
+data <- read.csv("./Data/kWh_vs_Temperature.csv")
 train_data <- data[1:20, ] # Take only the first 20 points for training
 validation_data <- data[-c(1:20),] # Take all BUT the first 20 points for validation
 
