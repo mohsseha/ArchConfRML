@@ -22,6 +22,7 @@ expectedPeakData$newPrediction<-predict(fitPkModel,"isMoPeak",peakData,debug = T
 length(expectedPeakData[expectedPeakData$isMoPeak!=expectedPeakData$newPrediction,])
 #Let's plot a particular node in our causality plot:
 #note that it does not plot the cold state at all (possibly because it's all hot)
+print(fitPkModel$isMoPeak)
 bn.fit.barchart(fitPkModel$isMoPeak)
 
 
