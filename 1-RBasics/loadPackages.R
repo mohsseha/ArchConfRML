@@ -11,7 +11,8 @@ requiredPackages <- c("plyr",
                       "tidyr",
                       "lubridate",
                       "autoencoder",
-                      "bnlearn"
+                      "bnlearn",
+                      "e1071"
                       )
 
 lapply(requiredPackages,function(x)install.packages(x,repos='http://cran.us.r-project.org',dependencies=TRUE))
