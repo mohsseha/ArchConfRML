@@ -4,7 +4,8 @@ train_data <- data[1:20, ] # Take only the first 20 points for training
 validation_data <- data[-c(1:20),] # Take all BUT the first 20 points for validation
 
 plot(validation_data, col="Red")
-points(train_data, col="Green")
+# HEY DON'T ACTUALLY LOOK AT THIS YET!!!
+# points(train_data, col="Green")
 
 
 # Choose Representation
