@@ -6,5 +6,6 @@ This repo has a number of examples that are used to teach the Data Science & Mac
 Look at `1-RBasics/loadPackages.R` for how to setup R and the install the libraries needed to run the examples. 
 
 ## Installing R and RStudio:
-https://www.r-project.org
-https://www.rstudio.com/products/rstudio/download/
+You can download R and the RStudio IDE here: 
+- https://www.r-project.org
+- https://www.rstudio.com/products/rstudio/download/
